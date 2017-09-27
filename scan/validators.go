@@ -724,9 +724,13 @@ func (ss *setOpResponses) Parse(lines []string) error {
 				if description == "" {
 					description = refTarget
 				}
-				ref, err = spec.NewRef("#/definitions/" + refTarget)
+				if len(refTarget) > 0 {
+					ref, err = spec.NewRef("#/definitions/" + refTarget)
+				}
 			} else {
-				ref, err = spec.NewRef("#/responses/" + refTarget)
+				if len(refTarget) > 0 {
+					ref, err = spec.NewRef("#/responses/" + refTarget)
+				}
 			}
 			if err != nil {
 				return err
@@ -734,11 +738,12 @@ func (ss *setOpResponses) Parse(lines []string) error {
 
 			var resp spec.Response
 
+			resp.Description = description
+
 			if !isDefinitionRef {
 				resp.Ref = ref
 			} else {
 				resp.Schema = new(spec.Schema)
-				resp.Description = description
 				if arrays == 0 {
 					resp.Schema.Ref = ref
 				} else {
