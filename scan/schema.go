@@ -17,6 +17,7 @@ package scan
 import (
 	"fmt"
 	"go/ast"
+	"go/build"
 	"log"
 	"os"
 	"path/filepath"
@@ -845,7 +846,13 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 	var fgp string
 	gopath := os.Getenv("GOPATH")
 	if gopath == "" {
-		gopath = filepath.Join(os.Getenv("HOME"), "go")
+		home := os.Getenv("HOME")
+		if home != "" {
+			gopath = filepath.Join(os.Getenv("HOME"), "go")
+		} else {
+			//next fallback, available since golang 1.8
+			gopath = build.Default.GOPATH
+		}
 	}
 	for _, p := range append(filepath.SplitList(gopath), runtime.GOROOT()) {
 		pref := filepath.Join(p, "src")
@@ -908,7 +915,7 @@ func (scp *schemaParser) packageForSelector(gofile *ast.File, expr ast.Expr) (*l
 			return pkg, nil
 		}
 		// TODO: I must admit this made me cry, it's not even a great solution.
-		pkg = scp.program.Package("github.com/go-swagger/go-swagger/vendor/" + selPath)
+		pkg = scp.program.Package("github.com/mmatzat/go-swagger/vendor/" + selPath)
 		if pkg != nil {
 			return pkg, nil
 		}
